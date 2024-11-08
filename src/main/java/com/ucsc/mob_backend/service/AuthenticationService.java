@@ -88,7 +88,7 @@ public class AuthenticationService {
             throw new DataIntegrityViolationException("Username or email already exists");
         }
 
-        loginDTO loginDTO = new loginDTO(user.getPassword(), user.getUsername());
+        loginDTO loginDTO = new loginDTO(request.getPassword(), user.getUsername());
 
         CompletableFuture.runAsync(() -> {
             try {
