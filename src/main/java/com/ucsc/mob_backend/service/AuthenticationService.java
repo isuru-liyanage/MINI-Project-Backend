@@ -88,7 +88,7 @@ public class AuthenticationService {
             throw new DataIntegrityViolationException("Username or email already exists");
         }
 
-        loginDTO loginDTO = new loginDTO(user.getPassword(), user.getUsername());
+        loginDTO loginDTO = new loginDTO(request.getPassword(), user.getUsername());
 
         CompletableFuture.runAsync(() -> {
             try {
@@ -210,11 +210,9 @@ public class AuthenticationService {
                                                 text-decoration: none;
                                             }
                                             .h-text{
-                                                background: linear-gradient(  #02001500 0%, #020015 30%, #020015 65%, rgb(255, 255, 255) 100%); /* Gradient with fade */
-                                                position: relative;
+                                                background: linear-gradient(  #020015 30%, #020015 65%, rgb(255, 255, 255) 100%); /* Gradient with fade */
                                                 text-align: center;
-                                                top: -95px;
-                                                padding-top: 70px;
+                                                padding-top: 50px;
                                                 padding-bottom: 70px;
                                                 margin-bottom: -95px;
                                             }
