@@ -2,10 +2,8 @@ package com.ucsc.mob_backend.Controllers;
 
 
 
-import com.ucsc.mob_backend.dto.AuthResponceDTO;
-import com.ucsc.mob_backend.dto.SingleLineResponceDTO;
-import com.ucsc.mob_backend.dto.loginDTO;
-import com.ucsc.mob_backend.dto.signupDTO;
+import com.ucsc.mob_backend.dto.*;
+import com.ucsc.mob_backend.entity.UserData;
 import com.ucsc.mob_backend.service.AuthenticationService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -35,15 +33,19 @@ public class AuthorizationController {
     public ResponseEntity<AuthResponceDTO> Login(@RequestBody loginDTO request) {
         return authenticationService.login(request);
     }
+    @PostMapping("/changePassword")
+    public ResponseEntity<SingleLineResponceDTO> changePassword(@RequestBody ChangePwDTO request ,@AuthenticationPrincipal UserData userData) {
+        return authenticationService.changepassword(userData,request);
+    }
 
 
 
     @GetMapping("/mydetails")
-    public String getUserDetails(@AuthenticationPrincipal UserDetails userDetails) {
+    public Map<String,String> getUserDetails(@AuthenticationPrincipal UserData userDetails) {
         if (userDetails == null) {
-            return "No user authenticated";
+            return Map.of("message", "No user authenticated");
         }
-        return "Authenticated user: " + userDetails.getUsername();
+        return Map.of("email", userDetails.getUsername());
     }
     @GetMapping("/myrole")
     public ResponseEntity<Map<String,String>> getUserRole(@AuthenticationPrincipal UserDetails userDetails) {

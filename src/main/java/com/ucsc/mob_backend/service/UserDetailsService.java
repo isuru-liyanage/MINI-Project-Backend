@@ -68,4 +68,10 @@ public class UserDetailsService {
         List<Userdetails> result = userDetailsRepository.findAll().stream().peek(userdetails -> userdetails.setUseridencrypted(null)).toList();
         return ResponseEntity.ok(result);
     }
+
+    public ResponseEntity<Userdetails> getDetailsbyid(String id) {
+        Userdetails userdetails = userDetailsRepository.findById(Integer.parseInt(id)).orElseThrow(() -> new RuntimeException("User details not found"));
+        userdetails.setUseridencrypted(null);
+        return ResponseEntity.ok(userdetails);
+    }
 }

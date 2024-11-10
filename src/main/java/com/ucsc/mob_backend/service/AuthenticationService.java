@@ -1,10 +1,7 @@
 package com.ucsc.mob_backend.service;
 
 
-import com.ucsc.mob_backend.dto.AuthResponceDTO;
-import com.ucsc.mob_backend.dto.SingleLineResponceDTO;
-import com.ucsc.mob_backend.dto.loginDTO;
-import com.ucsc.mob_backend.dto.signupDTO;
+import com.ucsc.mob_backend.dto.*;
 import com.ucsc.mob_backend.entity.UserData;
 import com.ucsc.mob_backend.repository.UserRepository;
 import com.ucsc.mob_backend.util.JwtHelper;
@@ -283,5 +280,15 @@ public class AuthenticationService {
                 """;
     }
 
+    public ResponseEntity<SingleLineResponceDTO> changepassword(UserData userData, ChangePwDTO request) {
+        if(passwordEncoder.matches(request.getOldPassword(),userData.getPassword())){
+            userData.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(userData);
+            return ResponseEntity.ok(new SingleLineResponceDTO("Password changed successfully"));
+        }else {
+            throw new BadCredentialsException("Incorrect password");
+        }
+
+    }
 
 }

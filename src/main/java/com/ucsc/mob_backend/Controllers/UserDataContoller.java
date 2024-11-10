@@ -15,10 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -37,6 +34,11 @@ public class UserDataContoller {
     @PostMapping ("/getMySubscribedData")
     public ResponseEntity<List<Userdetails>> getRecoveryData(@Valid @RequestBody PrivateKeyDTO privateKeyDTO, @AuthenticationPrincipal UserData userData) {
         return userDetailsService.getMyDetails(privateKeyDTO,userData);
+    }
+    @PreAuthorize("hasAuthority('USER')")
+    @GetMapping ("/get_using_id")
+    public ResponseEntity<Userdetails> getRecoveryData(@RequestParam String id) {
+        return userDetailsService.getDetailsbyid(id);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN','DEVELOPER')")
