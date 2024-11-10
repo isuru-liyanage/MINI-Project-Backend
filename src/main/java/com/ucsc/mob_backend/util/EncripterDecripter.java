@@ -45,7 +45,7 @@ public class EncripterDecripter {
     }
     public String decrypt(String data, SecretKey key) {
         if (key == null) throw new RuntimeException("Key is null");
-        if (data == null||data.isEmpty()) throw new RuntimeException("Data is null");
+        if (data == null||data.isEmpty())  return null;
 
         try {
             Cipher cipher  = Cipher.getInstance("AES");

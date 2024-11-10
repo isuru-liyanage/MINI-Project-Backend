@@ -74,4 +74,16 @@ public class UserDetailsService {
         userdetails.setUseridencrypted(null);
         return ResponseEntity.ok(userdetails);
     }
+
+    public ResponseEntity<SingleLineResponceDTO> deleteDetails(String id, PrivateKeyDTO privateKeyDTO, UserData userData) {
+        SecretKey secretKey =encripterDecripter.generateKey(privateKeyDTO.getPrivate_key());
+        String encryptedUserId = encripterDecripter.encrypt(String.valueOf(userData.getId()),secretKey);
+        Userdetails userdetails = userDetailsRepository.findById(Integer.parseInt(id)).orElseThrow(() -> new RuntimeException("User details not found"));
+        if (userdetails.getUseridencrypted().equals(encryptedUserId)) {
+            userDetailsRepository.delete(userdetails);
+            return ResponseEntity.ok(new SingleLineResponceDTO("User details deleted successfully"));
+        } else {
+            return ResponseEntity.badRequest().body(new SingleLineResponceDTO("User details not found"));
+        }
+    }
 }

@@ -3,6 +3,7 @@ package com.ucsc.mob_backend.Controllers;
 
 
 import com.ucsc.mob_backend.dto.*;
+import com.ucsc.mob_backend.entity.RecoveryData;
 import com.ucsc.mob_backend.entity.UserData;
 import com.ucsc.mob_backend.service.AuthenticationService;
 import jakarta.validation.Valid;
@@ -37,6 +38,11 @@ public class AuthorizationController {
     public ResponseEntity<SingleLineResponceDTO> changePassword(@RequestBody ChangePwDTO request ,@AuthenticationPrincipal UserData userData) {
         return authenticationService.changepassword(userData,request);
     }
+    @PostMapping("/resetPassword")
+    public ResponseEntity<SingleLineResponceDTO> resetPassword(@RequestBody ResetPwDTO request ) {
+        return authenticationService.resetpassword(request);
+    }
+
 
 
 
@@ -53,6 +59,11 @@ public class AuthorizationController {
             return ResponseEntity.badRequest().body(Map.of("message", "No user authenticated"));
         }
         return ResponseEntity.ok(Map.of("role", userDetails.getAuthorities().iterator().next().getAuthority()));
+    }
+
+    @PostMapping("/recover_account")
+    public ResponseEntity<SingleLineResponceDTO> recoverAccount(@RequestBody @Valid RecoveryData recoverAccountDTO) {
+        return authenticationService.recoverAcc(recoverAccountDTO);
     }
 
 }

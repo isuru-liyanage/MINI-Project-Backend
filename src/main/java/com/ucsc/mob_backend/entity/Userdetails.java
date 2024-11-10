@@ -20,7 +20,7 @@ public class Userdetails {
     private String eyeColour;
     private String useridencrypted;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "event_id", referencedColumnName = "event_id")
     private DataSourcingEvents dataSourcingEvents;
 

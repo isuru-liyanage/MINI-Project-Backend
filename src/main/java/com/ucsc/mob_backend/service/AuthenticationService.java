@@ -2,14 +2,19 @@ package com.ucsc.mob_backend.service;
 
 
 import com.ucsc.mob_backend.dto.*;
+import com.ucsc.mob_backend.entity.RecoveryData;
 import com.ucsc.mob_backend.entity.UserData;
+import com.ucsc.mob_backend.repository.RecoveryDataRepository;
 import com.ucsc.mob_backend.repository.UserRepository;
+import com.ucsc.mob_backend.util.EncripterDecripter;
 import com.ucsc.mob_backend.util.JwtHelper;
 import com.ucsc.mob_backend.util.KeyGenarator;
 import com.ucsc.mob_backend.util.Role;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
@@ -21,20 +26,30 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.util.concurrent.CompletableFuture;
 
 
 @Service
-@AllArgsConstructor
 public class AuthenticationService {
-
-    private final UserRepository userRepository;
-    private final JwtHelper jwtHelper;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-    private final EmailService emailService;
-    private final KeyGenarator keyGenarator;
-
+    @Autowired
+    private  UserRepository userRepository;
+    @Autowired
+    private  JwtHelper jwtHelper;
+    @Autowired
+    private  PasswordEncoder passwordEncoder;
+    @Autowired
+    private  AuthenticationManager authenticationManager;
+    @Autowired
+    private  EmailService emailService;
+    @Autowired
+    private  KeyGenarator keyGenarator;
+    @Autowired
+    private RecoveryDataRepository recoveryDataRepository;
+    @Autowired
+    private EncripterDecripter encripterDecripter;
+    @Value("${app.secret.key}")
+    private  String secretKeyString;
 
 
     public ResponseEntity<AuthResponceDTO> login(loginDTO request) {
@@ -289,6 +304,73 @@ public class AuthenticationService {
             throw new BadCredentialsException("Incorrect password");
         }
 
+    }
+    public ResponseEntity<SingleLineResponceDTO> resetpassword( ResetPwDTO request) {
+        UserData userData = userRepository.findById(Integer.parseInt(request.getId())).orElseThrow(() -> new RuntimeException("User not found"));
+        userData.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(userData);
+        return ResponseEntity.ok(new SingleLineResponceDTO("Password Reset successfully"));
+    }
+
+    public ResponseEntity<SingleLineResponceDTO> recoverAcc(RecoveryData recoveryData) {
+        SecretKey secretKey =encripterDecripter.generateKey(secretKeyString);
+        recoveryData.setFullName(encripterDecripter.encrypt(recoveryData.getFullName(),secretKey));
+        recoveryData.setDateOfBirth(encripterDecripter.encrypt(recoveryData.getDateOfBirth(),secretKey));
+
+        int count =2;
+        RecoveryData temp = recoveryDataRepository.findByFullNameAndDateOfBirth(recoveryData.getFullName(),recoveryData.getDateOfBirth()).orElseThrow(() -> new RuntimeException("Cannot find"));
+        RecoveryData data = new RecoveryData();
+        data.setFullName(encripterDecripter.decrypt(temp.getFullName(),secretKey));
+        data.setDateOfBirth(encripterDecripter.decrypt(temp.getDateOfBirth(),secretKey));
+        data.setMothersMaidenName(encripterDecripter.decrypt(temp.getMothersMaidenName(),secretKey));
+        data.setChildhoodBestFriendName(encripterDecripter.decrypt(temp.getChildhoodBestFriendName(),secretKey));
+        data.setChildhoodPetName(encripterDecripter.decrypt(temp.getChildhoodPetName(),secretKey));
+        data.setOwnQuestion(encripterDecripter.decrypt(temp.getOwnQuestion(),secretKey));
+        data.setOwnAnswer(encripterDecripter.decrypt(temp.getOwnAnswer(),secretKey));
+        data.setUserID(encripterDecripter.decrypt(temp.getUserID(),secretKey));
+
+        System.out.println(data.toString());
+        if(recoveryData.getChildhoodBestFriendName()!=null){
+            if(!recoveryData.getChildhoodBestFriendName().equals(data.getChildhoodBestFriendName())){
+                throw new RuntimeException("Invalid Best Friend Name");
+            }else {
+                count++;
+            }
+        }
+        if(recoveryData.getMothersMaidenName()!=null){
+            if(!recoveryData.getMothersMaidenName().equals(data.getMothersMaidenName())){
+                throw new RuntimeException("Invalid Mothers Maiden Name");
+            }else {
+                count++;
+            }
+        }
+        if(recoveryData.getChildhoodPetName()!=null){
+            if(!recoveryData.getChildhoodPetName().equals(data.getChildhoodPetName())){
+                throw new RuntimeException("Invalid Childhood Pet Name");
+            }else {
+                count++;
+            }
+        }
+        if (recoveryData.getOwnQuestion()!=null){
+            if(!recoveryData.getOwnQuestion().equals(data.getOwnQuestion())){
+                throw new RuntimeException("Invalid Question");
+            }else {
+                count++;
+            }
+        }
+        if(recoveryData.getOwnAnswer()!=null) {
+            if (!recoveryData.getOwnAnswer().equals(data.getOwnAnswer())) {
+                throw new RuntimeException("Invalid Answer");
+            } else {
+                count++;
+            }
+        }
+
+        if(count>3) {
+            return ResponseEntity.ok().body(new SingleLineResponceDTO(data.getUserID()));
+        }else {
+            throw new RuntimeException("Need more data");
+        }
     }
 
 }

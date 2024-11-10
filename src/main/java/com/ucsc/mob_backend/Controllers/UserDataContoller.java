@@ -41,6 +41,12 @@ public class UserDataContoller {
         return userDetailsService.getDetailsbyid(id);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
+    @DeleteMapping ("/delete")
+    public ResponseEntity<SingleLineResponceDTO> deleteRecoveryData(@RequestParam String id,@Valid @RequestBody PrivateKeyDTO privateKeyDTO, @AuthenticationPrincipal UserData userData) {
+        return userDetailsService.deleteDetails(id,privateKeyDTO,userData);
+    }
+
     @PreAuthorize("hasAnyAuthority('ADMIN','DEVELOPER')")
     @GetMapping ("/get")
     public ResponseEntity<List<Userdetails>> getRecoveryData() {
