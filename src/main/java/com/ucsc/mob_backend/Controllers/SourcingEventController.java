@@ -32,7 +32,7 @@ public class SourcingEventController {
     public ResponseEntity<List<DataSourcingEvents>> getEvents() {
         return sourcingEventService.getAllEvents();
     }
-    @PreAuthorize("hasAuthority('USER')")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     @PostMapping("/save")
     public ResponseEntity<SingleLineResponceDTO> saveEvent(@RequestBody @Valid EventDTO eventDTO) {
         return sourcingEventService.saveEvent(eventDTO);
